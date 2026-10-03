@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { videos } from '../data/videos';
+---
+<BaseLayout title="视频" description="视频。">
+  <header class="page-head">
+    <h1>视频</h1>
+    <p>做过的视频会放在这里。</p>
+  </header>
+  <section class="page-body">
+    {videos.length > 0 ? (
+      <div class="videos">
+        {videos.map((v) => (
+          <a class="video" href={v.url}>
+            <div class="thumb">{v.cover ? <img src={v.cover} alt="" loading="lazy" /> : '▶'}</div>
+            <span>{v.title}</span>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <p class="empty">还没有视频。</p>
+    )}
+  </section>
+</BaseLayout>

@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Socials from '../components/Socials.astro';
+import { siteConfig } from '../site.config';
+---
+<BaseLayout title="关于" description={`关于 ${siteConfig.title}。`}>
+  <header class="page-head">
+    <h1>关于</h1>
+  </header>
+  <section class="page-body prose">
+    {siteConfig.about.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean).map((p) => <p>{p}</p>)}
+    <Socials />
+  </section>
+</BaseLayout>

@@ -1,0 +1,91 @@
+{
+  "name": "My Site",
+  "tagline": "一句话介绍你自己",
+  "description": "网站描述，用于搜索引擎和分享卡片。",
+  "author": "Your Name",
+  "postsLabel": "手记",
+  "intro": "",
+  "about": "在这里写关于你的介绍。",
+  "nav": [
+    {
+      "label": "首页",
+      "href": "/"
+    },
+    {
+      "label": "手记",
+      "href": "/posts/"
+    },
+    {
+      "label": "项目",
+      "href": "/projects/"
+    },
+    {
+      "label": "关于",
+      "href": "/about/"
+    }
+  ],
+  "socials": [
+    {
+      "label": "GitHub",
+      "icon": "github",
+      "href": "https://github.com/your-name",
+      "qrcode": "",
+      "note": ""
+    },
+    {
+      "label": "公众号",
+      "icon": "wechat",
+      "href": "",
+      "qrcode": "",
+      "note": "微信扫码关注"
+    },
+    {
+      "label": "Telegram",
+      "icon": "telegram",
+      "href": "#",
+      "qrcode": "",
+      "note": ""
+    },
+    {
+      "label": "X",
+      "icon": "x",
+      "href": "#",
+      "qrcode": "",
+      "note": ""
+    },
+    {
+      "label": "邮箱",
+      "icon": "mail",
+      "href": "mailto:you@example.com",
+      "qrcode": "",
+      "note": ""
+    },
+    {
+      "label": "RSS",
+      "icon": "rss",
+      "href": "/rss.xml",
+      "qrcode": "",
+      "note": ""
+    }
+  ],
+  "home": [
+    {
+      "type": "intro",
+      "title": "简介",
+      "enabled": true,
+      "limit": null
+    },
+    {
+      "type": "posts",
+      "title": "手记",
+      "enabled": true,
+      "limit": 5
+    },
+    {
+      "type": "videos",
+      "title": "视频",
+      "enabled": true,
+      "limit": 3
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SocialIcon from '../components/SocialIcon.astro';
+import { siteConfig } from '../site.config';
+import { encodeMail, isMail } from '../lib/mail';
+
+const items = siteConfig.socials.filter((s) => s.qrcode || (s.href && s.href !== '#'));
+const shown = (href = '') => href.replace(/^https?:\/\//, '').replace(/\/$/, '');
+const external = (href = '') => /^https?:\/\//.test(href);
+const sub = (s: (typeof items)[number]) => {
+  if (s.note) return s.note;
+  if (s.icon === 'rss') return '订阅全文更新';
+  return external(s.href) ? shown(s.href) : '';
+};
+---
+<BaseLayout title="链接" description={`在哪里可以找到 ${siteConfig.title}。`}>
+  <header class="page-head">
+    <h1>链接</h1>
+    <p>在这些地方可以找到我。</p>
+  </header>
+  <section class="page-body">
+    <ul class="link-list">
+      {items.map((s, i) =>
+        isMail(s.href) ? (
+          <li class="link-row mail-reveal">
+            <span class="link-icon"><SocialIcon name={s.icon} /></span>
+            <span class="link-text">
+              <span class="link-title">{s.label}</span>
+              <span class="link-sub mail-hidden">点击右侧按钮显示地址</span>
+              <a class="link-sub mail-shown" data-mail-send href="#"><span data-mail-addr></span></a>
+            </span>
+            <span class="link-action">
+              <button type="button" class="pill mail-show" data-mail={encodeMail(s.href!)}>显示</button>
+              <button type="button" class="pill mail-shown" data-mail-copy>复制</button>
+            </span>
+          </li>
+        ) : s.qrcode ? (
+          <li class="link-row">
+            <span class="link-icon"><SocialIcon name={s.icon} /></span>
+            <span class="link-text">
+              <span class="link-title">{s.label}</span>
+              {sub(s) && <span class="link-sub">{sub(s)}</span>}
+            </span>
+            <span class="link-action">
+              <button type="button" class="qr-thumb" popovertarget={`links-qr-${i}`} aria-label={`放大 ${s.label} 二维码`}>
+                <img src={s.qrcode} alt="" width="56" height="56" loading="lazy" />
+              </button>
+            </span>
+            <div id={`links-qr-${i}`} popover class="qr-pop">
+              <img src={s.qrcode} alt={`${s.label} 二维码`} width="200" height="200" loading="lazy" />
+              <p class="qr-title">{s.label}</p>
+              {s.note && <p class="qr-note">{s.note}</p>}
+            </div>
+          </li>
+        ) : (
+          <li class="link-row">
+            <a class="link-cover" href={s.href} rel={external(s.href) ? 'me noopener' : undefined}>
+              <span class="link-icon"><SocialIcon name={s.icon} /></span>
+              <span class="link-text">
+                <span class="link-title">{s.label}</span>
+                {sub(s) && <span class="link-sub">{sub(s)}</span>}
+              </span>
+              <span class="link-action" aria-hidden="true">
+                <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9" /></svg>
+              </span>
+            </a>
+          </li>
+        ),
+      )}
+    </ul>
+  </section>
+</BaseLayout>

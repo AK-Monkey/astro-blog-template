@@ -1,0 +1,187 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { siteConfig } from '../../../site.config';
+import {
+  absoluteUrl,
+  formatDate,
+  getPosts,
+  postDescription,
+  postMdPath,
+  postPath,
+  readingMinutes,
+} from '../../../lib/posts';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+
+const { title, date, updated, tags, lang, draft } = post.data;
+const description = postDescription(post);
+const minutes = readingMinutes(post.body ?? '');
+const readingLabel = lang === 'en' ? `${minutes} min read` : `约 ${minutes} 分钟`;
+const toc = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
+// 二级标题为一组，其下的三级标题作为子列表
+const tocTree = toc.reduce<{ slug: string; text: string; children: typeof toc }[]>((tree, h) => {
+  if (h.depth === 2 || tree.length === 0) tree.push({ slug: h.slug, text: h.text, children: [] });
+  else tree[tree.length - 1].children.push(h);
+  return tree;
+}, []);
+const site = Astro.site ?? siteConfig.siteUrl;
+const mdUrl = absoluteUrl(postMdPath(post.id), site);
+const url = absoluteUrl(postPath(post.id), site);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description,
+  datePublished: date.toISOString(),
+  dateModified: (updated ?? date).toISOString(),
+  inLanguage: lang === 'en' ? 'en' : 'zh-CN',
+  url,
+  mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+  author: { '@type': 'Person', name: siteConfig.author, url: siteConfig.siteUrl },
+  publisher: { '@type': 'Organization', name: siteConfig.title, url: siteConfig.siteUrl },
+  ...(tags.length > 0 ? { keywords: tags.join(', ') } : {}),
+};
+// 避免 </script> 提前闭合
+const jsonLdText = JSON.stringify(jsonLd).replace(/</g, '\\u003c');
+---
+<BaseLayout
+  title={title}
+  description={description}
+  lang={lang}
+  ogType="article"
+  publishedTime={date}
+  modifiedTime={updated ?? date}
+  tags={tags}
+  noindex={draft}
+>
+  <Fragment slot="head">
+    <link rel="alternate" type="text/markdown" href={mdUrl} />
+    <script type="application/ld+json" set:html={jsonLdText} />
+  </Fragment>
+
+  <div class="post-layout">
+  {toc.length >= 2 && (
+    <>
+      {/* 首屏绘制前恢复目录的展开/收起状态，避免闪动 */}
+      <script is:inline>
+        try { if (localStorage.getItem('site-toc') === 'collapsed') document.documentElement.dataset.toc = 'collapsed'; } catch (e) {}
+      </script>
+      <aside class="toc-side" aria-label="目录" data-pagefind-ignore>
+        <div class="toc-side-inner">
+          <button class="toc-toggle" type="button" data-toc-toggle aria-controls="toc-side-panel" aria-expanded="true" title="收起目录" aria-label="收起目录">
+            <svg class="i-collapse" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m11 17-5-5 5-5M18 17l-5-5 5-5" /></svg>
+            <svg class="i-expand" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13" /></svg>
+          </button>
+          <nav id="toc-side-panel" class="toc-side-panel toc-links">
+            <a class="toc-side-title" href="#post-top">{title}</a>
+            <ol>
+              {tocTree.map((h) => (
+                <li>
+                  <a href={`#${h.slug}`} data-toc-link={h.slug}>{h.text}</a>
+                  {h.children.length > 0 && (
+                    <ol>
+                      {h.children.map((c) => (
+                        <li><a href={`#${c.slug}`} data-toc-link={c.slug}>{c.text}</a></li>
+                      ))}
+                    </ol>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
+        </div>
+      </aside>
+
+      {/* 窄屏：右下角目录按钮 + 底部弹出的目录面板 */}
+      <button class="toc-fab" type="button" data-toc-sheet-open aria-controls="toc-sheet" aria-expanded="false" aria-label="打开目录" title="目录">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13" /></svg>
+      </button>
+      <div class="toc-sheet" id="toc-sheet" role="dialog" aria-modal="true" aria-label="目录" data-pagefind-ignore>
+        <div class="toc-sheet-backdrop" data-toc-sheet-close></div>
+        <div class="toc-sheet-panel">
+          <div class="toc-sheet-head">
+            <span>目录</span>
+            <button type="button" class="toc-sheet-close" data-toc-sheet-close aria-label="关闭目录">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+            </button>
+          </div>
+          <nav class="toc-sheet-list toc-links">
+            <a class="toc-side-title" href="#post-top">{title}</a>
+            <ol>
+              {tocTree.map((h) => (
+                <li>
+                  <a href={`#${h.slug}`} data-toc-link={h.slug}>{h.text}</a>
+                  {h.children.length > 0 && (
+                    <ol>
+                      {h.children.map((c) => (
+                        <li><a href={`#${c.slug}`} data-toc-link={c.slug}>{c.text}</a></li>
+                      ))}
+                    </ol>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </>
+  )}
+
+  <header class="post-head" id="post-top">
+    <a class="back" href="/posts/">← 全部{siteConfig.postsLabel}</a>
+    <h1 data-pagefind-meta="title">{title}</h1>
+    <div class="meta">
+      {draft && <><span>草稿</span><span>·</span></>}
+      <time datetime={formatDate(date)}>{formatDate(date)}</time>
+      <span>·</span>
+      <span>{readingLabel}</span>
+      {tags.map((t) => <><span>·</span><span>{t}</span></>)}
+      <span>·</span>
+      <a href={postMdPath(post.id)}>Markdown 版本</a>
+    </div>
+  </header>
+
+  {toc.length >= 2 && (
+    <details class="toc" open data-pagefind-ignore>
+      <summary>目录</summary>
+      <ol>
+        {tocTree.map((h) => (
+          <li>
+            <a href={`#${h.slug}`}>{h.text}</a>
+            {h.children.length > 0 && (
+              <ol>
+                {h.children.map((c) => (
+                  <li><a href={`#${c.slug}`}>{c.text}</a></li>
+                ))}
+              </ol>
+            )}
+          </li>
+        ))}
+      </ol>
+    </details>
+  )}
+
+  <article class="prose" data-source={post.data.source?.type} data-pagefind-body>
+    <Content />
+  </article>
+
+  <div class="post-foot">
+    <a href="/posts/">← 全部{siteConfig.postsLabel}</a>
+    <span>
+      {updated ? `更新于 ${formatDate(updated)}` : `发布于 ${formatDate(date)}`}
+    </span>
+  </div>
+  </div>
+
+  <script>
+    import '../../../scripts/toc';
+  </script>
+</BaseLayout>

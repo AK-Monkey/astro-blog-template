@@ -1,0 +1,26 @@
+---
+// 标志：线条猫头鹰。亮色主题是“好奇”（瞳孔看向右上），暗色主题换成“眯眼”（夜猫子）。
+// 两个版本都输出，由 CSS 按当前主题显示其一；整体显示/隐藏由 html[data-logo] 控制。
+---
+<span class="logo" aria-hidden="true">
+  <svg class="logo-day" viewBox="0 0 32 32" focusable="false">
+    <g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3.5 9.5C7.5 6.2 12.5 6.4 16 10.2 19.5 6.4 24.5 6.2 28.5 9.5" />
+      <circle cx="10" cy="17.5" r="5.6" />
+      <circle cx="22" cy="17.5" r="5.6" />
+      <path d="m14.6 24.6 1.4 2.2 1.4-2.2" />
+    </g>
+    <circle cx="11.6" cy="16" r="2.1" fill="currentColor" />
+    <circle cx="23.6" cy="16" r="2.1" fill="currentColor" />
+  </svg>
+  <svg class="logo-night" viewBox="0 0 32 32" focusable="false">
+    <g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3.5 9.5C7.5 6.2 12.5 6.4 16 10.2 19.5 6.4 24.5 6.2 28.5 9.5" />
+      <circle cx="10" cy="17.5" r="5.6" />
+      <circle cx="22" cy="17.5" r="5.6" />
+      <path d="m14.6 24.6 1.4 2.2 1.4-2.2" />
+    </g>
+    <path d="M6.4 17.5a3.6 3.6 0 0 0 7.2 0Z" fill="currentColor" />
+    <path d="M18.4 17.5a3.6 3.6 0 0 0 7.2 0Z" fill="currentColor" />
+  </svg>
+</span>

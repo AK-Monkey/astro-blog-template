@@ -1,0 +1,59 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Logo from '../components/Logo.astro';
+import Socials from '../components/Socials.astro';
+import PostList from '../components/PostList.astro';
+import { siteConfig } from '../site.config';
+import { getPosts } from '../lib/posts';
+import { videos } from '../data/videos';
+
+const posts = await getPosts();
+const sections = siteConfig.home.filter((s) => s.enabled);
+const paragraphs = (text: string) => text.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+---
+<BaseLayout>
+  <header class="hero">
+    <Logo />
+    {siteConfig.name && <h1>{siteConfig.name}</h1>}
+    {siteConfig.tagline && <p class="tagline">{siteConfig.tagline}</p>}
+    <Socials />
+  </header>
+
+  {sections.map((section) => {
+    if (section.type === 'intro' && siteConfig.intro) {
+      return (
+        <section class="block intro">
+          {section.title && <h2>{section.title}</h2>}
+          {paragraphs(siteConfig.intro).map((p) => <p>{p}</p>)}
+        </section>
+      );
+    }
+    if (section.type === 'posts') {
+      const latest = posts.slice(0, section.limit ?? 5);
+      return (
+        <section class="block">
+          <h2>{siteConfig.postsLabel}</h2>
+          {latest.length > 0 ? <PostList posts={latest} /> : <p class="empty">还没有{siteConfig.postsLabel}。</p>}
+          <a class="more" href="/posts/">全部{siteConfig.postsLabel} →</a>
+        </section>
+      );
+    }
+    if (section.type === 'videos' && videos.length > 0) {
+      return (
+        <section class="block">
+          {section.title && <h2>{section.title}</h2>}
+          <div class="videos">
+            {videos.slice(0, section.limit ?? 3).map((v) => (
+              <a class="video" href={v.url}>
+                <div class="thumb">{v.cover ? <img src={v.cover} alt="" loading="lazy" /> : '▶'}</div>
+                <span>{v.title}</span>
+              </a>
+            ))}
+          </div>
+          <a class="more" href="/videos/">全部视频 →</a>
+        </section>
+      );
+    }
+    return null;
+  })}
+</BaseLayout>

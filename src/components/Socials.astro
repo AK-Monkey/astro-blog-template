@@ -1,0 +1,43 @@
+---
+// 社交链接图标。href 为空或 '#' 且没有二维码的条目不显示；有二维码的条目点击弹出二维码（原生 popover，无需脚本）。
+import { siteConfig } from '../site.config';
+import SocialIcon from './SocialIcon.astro';
+import { encodeMail, isMail } from '../lib/mail';
+
+const items = siteConfig.socials.filter((s) => s.qrcode || (s.href && s.href !== '#'));
+const uid = Math.random().toString(36).slice(2, 8);
+const external = (href = '') => /^https?:\/\//.test(href);
+---
+{items.length > 0 && (
+  <div class="socials">
+    {items.map((s, i) =>
+      s.qrcode ? (
+        <>
+          <button type="button" class="social-qr" popovertarget={`qr-${uid}-${i}`} title={s.label} aria-label={s.label}>
+            <SocialIcon name={s.icon} />
+          </button>
+          <div id={`qr-${uid}-${i}`} popover class="qr-pop">
+            <img src={s.qrcode} alt={`${s.label} 二维码`} width="200" height="200" loading="lazy" />
+            <p class="qr-title">{s.label}</p>
+            {s.note && <p class="qr-note">{s.note}</p>}
+          </div>
+        </>
+      ) : isMail(s.href) ? (
+        <>
+          <button type="button" class="social-qr" popovertarget={`mail-${uid}-${i}`} data-mail={encodeMail(s.href!)} title={s.label} aria-label={`${s.label}（点击显示）`}>
+            <SocialIcon name={s.icon} />
+          </button>
+          <div id={`mail-${uid}-${i}`} popover class="qr-pop mail-pop">
+            <p class="qr-title">{s.label}</p>
+            <p class="mail-addr" data-mail-addr></p>
+            <p class="mail-actions"><a data-mail-send href="#">写邮件</a><button type="button" data-mail-copy>复制</button></p>
+          </div>
+        </>
+      ) : (
+        <a href={s.href} title={s.label} aria-label={s.label} rel={external(s.href) ? 'me noopener' : undefined}>
+          <SocialIcon name={s.icon} />
+        </a>
+      ),
+    )}
+  </div>
+)}

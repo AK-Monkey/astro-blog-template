@@ -1,0 +1,121 @@
+# Sveltia CMS 配置。文档：https://sveltiacms.app/en/docs/intro
+# 保存 = 向 GitHub 提交一次 commit，Vercel 随后自动重新构建（约 1–2 分钟生效）。
+backend:
+  name: github
+  repo: your-github-name/your-repo
+  branch: main
+  # GitHub 登录走 Cloudflare Workers 上的 Sveltia CMS Authenticator（ALLOWED_DOMAINS 限定了可用域名）
+  base_url: https://sveltia-cms-auth.<your-subdomain>.workers.dev
+
+media_folder: public/uploads
+public_folder: /uploads
+
+collections:
+  - name: settings
+    label: 站点设置
+    icon: settings
+    files:
+      - name: site
+        label: 网站与首页
+        file: src/data/site.json
+        format: json
+        fields:
+          - { name: name, label: 网站名, widget: string, required: false }
+          - { name: tagline, label: 一句话简介, widget: string, required: false, hint: 显示在首页网站名下方 }
+          - { name: description, label: 网站描述, widget: string, required: false, hint: 用于搜索引擎和分享卡片 }
+          - { name: author, label: 作者, widget: string, required: false }
+          - { name: postsLabel, label: 内容栏目名称, widget: string, required: false, default: 手记, hint: "如“手记”“笔记”“随笔”。导航、首页区块标题、列表页、“全部…”链接、搜索框等处统一使用；留空则用“手记”" }
+          - { name: intro, label: 首页“简介”正文, widget: text, required: false, hint: 空一行分段 }
+          - { name: about, label: “关于”页正文, widget: text, required: false, hint: 空一行分段 }
+          - name: nav
+            required: false
+            label: 导航
+            widget: list
+            summary: "{{fields.label}} → {{fields.href}}"
+            fields:
+              - { name: label, label: 文字, widget: string }
+              - { name: href, label: 链接, widget: string, hint: "站内页面以 / 开头，如 /posts/" }
+          - name: socials
+            required: false
+            label: 社交链接
+            widget: list
+            summary: "{{fields.label}}"
+            fields:
+              - { name: label, label: 名称, widget: string }
+              - name: icon
+                label: 图标
+                widget: select
+                options:
+                  - { label: RSS, value: rss }
+                  - { label: GitHub, value: github }
+                  - { label: X, value: x }
+                  - { label: Telegram, value: telegram }
+                  - { label: 微信公众号, value: wechat }
+                  - { label: 哔哩哔哩, value: bilibili }
+                  - { label: 邮箱, value: mail }
+              - { name: href, label: 链接, widget: string, required: false, hint: "邮箱写成 mailto:you@example.com；留空或填 # 且没有二维码时不显示" }
+              - { name: qrcode, label: 二维码图片, widget: image, required: false, hint: "公众号等无法直接链接的平台：上传二维码，点击图标时弹出" }
+              - { name: note, label: 二维码说明, widget: string, required: false, hint: "显示在二维码下方，如：微信扫码关注，或搜索「公众号名称」" }
+          - name: home
+            required: false
+            label: 首页区块
+            widget: list
+            hint: 拖动调整顺序；取消“显示”即可隐藏
+            summary: "{{fields.title}}（{{fields.type}}）"
+            allow_add: false
+            allow_remove: false
+            fields:
+              - name: type
+                label: 类型
+                widget: select
+                options:
+                  - { label: 简介, value: intro }
+                  - { label: 手记（标题跟随“内容栏目名称”）, value: posts }
+                  - { label: 视频, value: videos }
+              - { name: title, label: 标题, widget: string, required: false, hint: 留空则不显示标题 }
+              - { name: enabled, label: 显示, widget: boolean, default: true }
+              - { name: limit, label: 显示条数, widget: number, value_type: int, min: 1, max: 20, required: false, hint: 仅对手记、视频有效 }
+      - name: videos
+        label: 视频
+        file: src/data/videos.json
+        format: json
+        fields:
+          - name: items
+            label: 视频列表
+            widget: list
+            required: false
+            hint: 清空后首页“视频”区块会自动隐藏
+            summary: "{{fields.title}}"
+            fields:
+              - { name: title, label: 标题, widget: string }
+              - { name: url, label: 视频链接, widget: string, hint: 哔哩哔哩或 YouTube 页面地址 }
+              - { name: cover, label: 封面图, widget: image, required: false }
+              - { name: date, label: 日期, widget: datetime, time_format: false, date_format: YYYY-MM-DD, format: YYYY-MM-DD, required: false }
+
+  - name: posts
+    label: 手记
+    icon: article
+    folder: src/content/posts
+    path: "{{slug}}/index"
+    slug: "{{fields.slug}}"
+    media_folder: images
+    public_folder: ./images
+    create: true
+    sortable_fields: [date, title]
+    summary: "{{date}} · {{title}}"
+    hint: 从飞书导入的内容（带 source 字段）请在飞书里修改后重新导入，在这里改会被下次导入覆盖。
+    fields:
+      - { name: title, label: 标题, widget: string }
+      - { name: slug, label: 网址, widget: string, pattern: ["^[a-z0-9]+(-[a-z0-9]+)*$", "只能用小写字母、数字和连字符"], hint: "例如 my-first-post，对应 /posts/my-first-post/" }
+      - { name: date, label: 发布日期, widget: datetime, time_format: false, date_format: YYYY-MM-DD, format: YYYY-MM-DD }
+      - { name: description, label: 摘要, widget: text, required: false }
+      - { name: tags, label: 标签, widget: list, required: false, default: [] }
+      - name: lang
+        label: 语言
+        widget: select
+        default: zh
+        options:
+          - { label: 中文, value: zh }
+          - { label: English, value: en }
+      - { name: draft, label: 草稿, widget: boolean, default: false }
+      - { name: body, label: 正文, widget: markdown }

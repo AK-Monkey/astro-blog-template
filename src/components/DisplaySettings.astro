@@ -1,0 +1,40 @@
+---
+// 显示设置弹出面板。位置由 src/scripts/display.ts 相对触发按钮计算。
+const rows = [
+  { key: 'layout', label: '布局', options: [
+    { val: 'a', text: 'A 居中', title: '无导航，标题居中' },
+    { val: 'b', text: 'B 导航·左', title: '顶部导航，标题左对齐' },
+    { val: 'c', text: 'C 导航·中', title: '顶部导航，标题居中' },
+  ] },
+  { key: 'font', label: '字体', options: [
+    { val: 'serif', text: '衬线' },
+    { val: 'sans', text: '无衬线' },
+    { val: 'mix', text: '混合' },
+  ] },
+  { key: 'theme', label: '主题', options: [
+    { val: 'auto', text: '跟随系统' },
+    { val: 'light', text: '亮' },
+    { val: 'dark', text: '暗' },
+  ] },
+  { key: 'logo', label: '标志', options: [
+    { val: 'on', text: '显示' },
+    { val: 'off', text: '隐藏' },
+  ] },
+];
+---
+<div class="settings" id="display-settings" role="dialog" aria-label="显示设置" hidden>
+  <header><span>显示设置</span><button class="close" type="button" data-settings-close aria-label="关闭">关闭</button></header>
+  <div class="body">
+    {rows.map((row) => (
+      <div class="row" role="group" aria-label={row.label}>
+        <div class="k">{row.label}</div>
+        <div class="seg">
+          {row.options.map((o) => (
+            <button type="button" data-set={row.key} data-val={o.val} title={o.title} aria-pressed="false">{o.text}</button>
+          ))}
+        </div>
+      </div>
+    ))}
+    <div class="hint">A：无导航、标题居中　B：顶部导航、标题左对齐　C：顶部导航、标题居中。设置只保存在本浏览器里。</div>
+  </div>
+</div>

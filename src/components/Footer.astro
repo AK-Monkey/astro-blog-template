@@ -1,0 +1,13 @@
+---
+import { siteConfig } from '../site.config';
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <span>© {year}{siteConfig.name && ` ${siteConfig.name}`}</span>
+  <span>
+    <a href="/rss.xml">RSS</a> · <a href="/llms.txt">llms.txt</a> · <a href="/links/">链接</a><span class="footer-settings"> · <button type="button" data-search-open aria-haspopup="dialog" aria-controls="site-search">搜索</button></span>
+    {siteConfig.displaySettings && (
+      <span class="footer-settings"> · <button type="button" data-settings-toggle aria-haspopup="dialog" aria-expanded="false" aria-controls="display-settings">显示设置</button></span>
+    )}
+  </span>
+</footer>
